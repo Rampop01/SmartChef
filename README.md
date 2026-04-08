@@ -1,6 +1,6 @@
 # Smart Chef: AI-Powered Culinary Architect
 
-Smart Chef is an intelligent culinary companion developed for the OxBuild Hackathon. It leverages the power of Oxlo.ai's natural language processing API to understand available pantry ingredients, dietary constraints, and macronutrient targets, and transforms them into customized, meticulously formatted recipes.
+Smart Chef is an intelligent culinary companion. It leverages the power of Oxlo.ai's natural language processing API to understand available pantry ingredients, dietary constraints, and macronutrient targets, and transforms them into customized, meticulously formatted recipes.
 
 ## Table of Contents
 - Introduction
@@ -9,7 +9,6 @@ Smart Chef is an intelligent culinary companion developed for the OxBuild Hackat
 - Technology Stack
 - Oxlo.ai Integration
 - Setup and Installation
-- Hackathon Submission Details
 
 ## Introduction
 The problem of "what to cook with what I have" affects everyone from busy professionals to college students. Combining ingredients effectively while adhering to specific dietary requirements (such as Keto, Vegan, or Gluten-Free) or strict fitness macros (high-protein, low-calorie) requires significant time and culinary knowledge. Smart Chef removes this friction entirely by acting as an intelligent algorithmic sous-chef.
@@ -25,11 +24,7 @@ Users can input the ingredients they currently possess in their kitchen. They ca
 - Recipe Vault: A historical ledger that actively logs every generated recipe, allowing users to return to past generations easily.
 - Next-Generation Interface: Designed natively with Next.js, featuring a high-end glassmorphism architecture, dynamic background lighting, and completely custom responsive styling.
 
-## Technology Stack
-- Core Framework: Next.js (App Router, React, TypeScript)
-- Styling: Custom Vanilla CSS (Design Systems, CSS Variables, and Glassmorphism techniques)
-- Database: Browser Local Storage (for Pantry and History tracking without latency)
-- AI Interfacing: Axios for robust network handling and automated IPv4 resolution to Oxlo servers.
+
 
 ## Oxlo.ai Integration
 This project extensively utilizes the Oxlo.ai platform to process unstructured culinary data. 
@@ -42,7 +37,7 @@ This project extensively utilizes the Oxlo.ai platform to process unstructured c
 
 ### Prerequisites
 - Node.js (v18 or higher)
-- An active Oxlo.ai API Key from portal.oxlo.ai
+- An active Oxlo.ai API Key from `portal.oxlo.ai`
 
 ### Instructions
 1. Clone this repository to your local machine.
@@ -65,10 +60,4 @@ This project extensively utilizes the Oxlo.ai platform to process unstructured c
    ```
 6. Open your web browser to `http://localhost:3000` to interact with the application.
 
-## Hackathon Submission Details
-- Registered Oxlo.ai Email: [Enter Your Registered Email Here]
-- Platform: GitHub Open Source
-- Hackathon: OxBuild by Oxlo.ai
 
----
-Developed for OxBuild 2026.
