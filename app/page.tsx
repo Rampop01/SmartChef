@@ -23,8 +23,7 @@ export default function LandingPage() {
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(135deg, rgba(5,5,5,0.95) 0%, rgba(5,5,5,0.7) 100%)',
-          backdropFilter: 'blur(3px)'
+          background: 'linear-gradient(135deg, rgba(5,5,5,0.95) 0%, rgba(5,5,5,0.7) 100%)'
         }} />
       </div>
 
