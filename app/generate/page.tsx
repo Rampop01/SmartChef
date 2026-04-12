@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Sparkles, Utensils, Hexagon, Loader2, Plus, Download, RefreshCw, Printer } from 'lucide-react';
+import { Sparkles, Utensils, Hexagon, Loader2, Plus, Download, RefreshCw, Printer, Globe } from 'lucide-react';
 import axios from 'axios';
 import RecipeRenderer from '../components/RecipeRenderer';
 
@@ -25,6 +25,7 @@ export default function Generate() {
   const [ingredients, setIngredients] = useState('');
   const [dietary, setDietary] = useState('');
   const [goals, setGoals] = useState('');
+  const [language, setLanguage] = useState('English');
   const [recipe, setRecipe] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -94,7 +95,7 @@ export default function Generate() {
       const response = await fetch('/api/generate-recipe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ingredients, dietary, goals }),
+        body: JSON.stringify({ ingredients, dietary, goals, language }),
       });
 
       const data = await response.json();
@@ -194,6 +195,31 @@ export default function Generate() {
                   value={goals}
                   onChange={(e) => setGoals(e.target.value)}
                 />
+              </div>
+            </div>
+
+            <div className="input-group" style={{ marginTop: '1.5rem' }}>
+              <label className="label" htmlFor="language">Preferred Language</label>
+              <div style={{position: 'relative'}}>
+                <select 
+                  id="language" 
+                  className="select"
+                  style={{appearance: 'none'}}
+                  value={language} 
+                  onChange={(e) => setLanguage(e.target.value)}
+                >
+                  <option value="English">English</option>
+                  <option value="Spanish">Español (Spanish)</option>
+                  <option value="French">Français (French)</option>
+                  <option value="German">Deutsch (German)</option>
+                  <option value="Italian">Italiano (Italian)</option>
+                  <option value="Portuguese">Português (Portuguese)</option>
+                  <option value="Arabic">العربية (Arabic)</option>
+                  <option value="Chinese">中文 (Chinese)</option>
+                  <option value="Japanese">日本語 (Japanese)</option>
+                  <option value="Russian">Русский (Russian)</option>
+                </select>
+                <Globe size={16} strokeWidth={2} style={{position: 'absolute', right: '1rem', top: '1rem', color: 'rgba(255,255,255,0.4)', pointerEvents: 'none'}} />
               </div>
             </div>
 

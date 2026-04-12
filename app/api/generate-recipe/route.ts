@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export async function POST(req: Request) {
   try {
-    const { ingredients, dietary, goals } = await req.json();
+    const { ingredients, dietary, goals, language } = await req.json();
 
     if (!ingredients) {
       return NextResponse.json({ error: 'Ingredients are required' }, { status: 400 });
@@ -17,14 +17,17 @@ export async function POST(req: Request) {
       );
     }
 
+    const currentLanguage = language || 'English';
+
     // Build the prompt for the AI
-    let prompt = `A user wants a recipe using ONLY these ingredients: ${ingredients}.
+    let prompt = `A user wants a recipe in the language: ${currentLanguage}.
+    Use ONLY these ingredients: ${ingredients}.
     
     CRITICAL RULES:
     1. Use as many of the provided ingredients as possible.
     2. DO NOT add any ingredients that are not in the list, unless they are very basic pantry staples (like salt, pepper, oil, or water).
-    3. If an ingredient is not listed (e.g., no chicken, no pasta), do NOT include it in the recipe.
-    4. The recipe must be realistic and high-quality despite the limitations.`;
+    3. The recipe must be realistic and high-quality despite the limitations.
+    4. MANDATORY: The ENTIRE response (Title, Description, Ingredients, Steps) MUST be in ${currentLanguage}.`;
 
     if (dietary) prompt += `\n\nDietary Preferences: ${dietary}. (The recipe MUST follow these)`;
     if (goals) prompt += `\n\nNutritional Goals: ${goals}. (The recipe MUST align with these)`;
@@ -40,7 +43,7 @@ export async function POST(req: Request) {
       messages: [
         {
           role: 'system',
-          content: 'You are a professional "Fridge Raider" chef. Your goal is to create delicious meals using ONLY the ingredients the user provides. You never add outside ingredients except for minimal staples like salt, pepper, and cooking oil.'
+          content: `You are a multilingual professional chef. Your goal is to create delicious meals using ONLY the provided ingredients. You respond EXCLUSIVELY in ${currentLanguage}.`
         },
         { role: 'user', content: prompt }
       ],
