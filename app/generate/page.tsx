@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Sparkles, Utensils, Hexagon, Loader2, Plus } from 'lucide-react';
+import { Sparkles, Utensils, Hexagon, Loader2, Plus, Download, RefreshCw, Printer } from 'lucide-react';
 import axios from 'axios';
+import RecipeRenderer from '../components/RecipeRenderer';
 
 interface RecipeHistory {
   id: string;
@@ -27,6 +28,7 @@ export default function Generate() {
   const [recipe, setRecipe] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [displayedImage, setDisplayedImage] = useState('');
   const [pantryItems, setPantryItems] = useState<string[]>([]);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function Generate() {
     setIngredients((prev) => (prev.trim() + separator + item).trim());
   };
 
-  const saveToHistory = (newRecipeContent: string, currentIngredients: string) => {
+  const saveToHistory = (newRecipeContent: string, currentIngredients: string, imgUrl: string) => {
     const randomImg = FALLBACK_IMAGES[Math.floor(Math.random() * FALLBACK_IMAGES.length)];
     
     const newItem: RecipeHistory = {
@@ -50,7 +52,7 @@ export default function Generate() {
       date: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
       ingredients: currentIngredients,
       recipe: newRecipeContent,
-      imageUrl: randomImg
+      imageUrl: imgUrl || randomImg
     };
 
     try {
@@ -61,8 +63,24 @@ export default function Generate() {
     } catch (err) {}
   };
 
-  const generateRecipe = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const downloadRecipe = () => {
+    const titleMatch = recipe.match(/#\s+(.*)/);
+    const fileName = titleMatch ? `${titleMatch[1].replace(/\s+/g, '_').toLowerCase()}.txt` : 'recipe.txt';
+    const element = document.createElement("a");
+    const file = new Blob([recipe], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = fileName;
+    document.body.appendChild(element); 
+    element.click();
+    document.body.removeChild(element);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const generateRecipe = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!ingredients.trim()) {
       setError('Please tell me what ingredients you have in your kitchen.');
       return;
@@ -86,7 +104,8 @@ export default function Generate() {
       }
 
       setRecipe(data.recipe);
-      saveToHistory(data.recipe, ingredients);
+      setDisplayedImage(data.imageUrl);
+      saveToHistory(data.recipe, ingredients, data.imageUrl);
 
       setTimeout(() => {
         window.scrollBy({ top: 500, behavior: 'smooth' });
@@ -201,26 +220,53 @@ export default function Generate() {
           </form>
 
           {recipe && (
-            <div className="recipe-result-wrapper">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem'}}>
-                <div style={{ background: 'linear-gradient(135deg, #7928CA, #FF0080)', padding: '0.6rem', borderRadius: '12px' }}>
-                  <Utensils size={24} color="white" />
+              <div className="recipe-result-wrapper">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ background: 'linear-gradient(135deg, #7928CA, #FF0080)', padding: '0.6rem', borderRadius: '12px' }}>
+                      <Utensils size={24} color="white" />
+                    </div>
+                    <h2 style={{ fontSize: '2rem', fontFamily: 'var(--font-display)', fontWeight: 700, margin: 0 }}>Your Recipe</h2>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button 
+                      onClick={() => generateRecipe()} 
+                      className="pantry-chip" 
+                      style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                      title="Generate a different version"
+                    >
+                      <RefreshCw size={16} /> Suggest Another
+                    </button>
+                    <button 
+                      onClick={downloadRecipe} 
+                      className="pantry-chip"
+                      title="Download as Text"
+                    >
+                      <Download size={16} />
+                    </button>
+                    <button 
+                      onClick={handlePrint} 
+                      className="pantry-chip"
+                      title="Print Recipe"
+                    >
+                      <Printer size={16} />
+                    </button>
+                  </div>
                 </div>
-                <h2 style={{ fontSize: '2rem', fontFamily: 'var(--font-display)', fontWeight: 700, margin: 0 }}>Your Recipe</h2>
+                
+                <div style={{ width: '100%', height: '400px', borderRadius: '24px', overflow: 'hidden', marginBottom: '2.5rem', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.02)' }}>
+                  <img 
+                    src={displayedImage || FALLBACK_IMAGES[0]} 
+                    alt="Delicious AI-generated meal" 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </div>
+                
+                <div className="recipe-content">
+                  <RecipeRenderer content={recipe} />
+                </div>
               </div>
-              
-              <div className="recipe-content">
-                {recipe.split('\n').map((line, index) => {
-                  if (line.startsWith('# ')) return <h1 key={index}>{line.replace('# ', '')}</h1>;
-                  if (line.startsWith('## ')) return <h2 key={index}>{line.replace('## ', '')}</h2>;
-                  if (line.startsWith('### ')) return <h3 key={index}>{line.replace('### ', '')}</h3>;
-                  if (line.startsWith('- ')) return <li key={index}>{line.replace('- ', '')}</li>;
-                  if (line.match(/^\d+\.\s/)) return <li key={index}>{line}</li>;
-                  if (line.trim() === '') return <br key={index} />;
-                  return <p key={index}>{line}</p>;
-                })}
-              </div>
-            </div>
           )}
         </div>
       </main>

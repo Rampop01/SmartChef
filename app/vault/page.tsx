@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Clock, Search } from 'lucide-react';
+import { Clock, Search, Trash2, ArrowLeft, Download, Printer } from 'lucide-react';
+import RecipeRenderer from '../components/RecipeRenderer';
 
 interface RecipeHistory {
   id: string;
@@ -14,6 +15,32 @@ interface RecipeHistory {
 export default function Vault() {
   const [history, setHistory] = useState<RecipeHistory[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<RecipeHistory | null>(null);
+
+  const deleteRecipe = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (confirm('Are you sure you want to delete this recipe from your vault?')) {
+      const updated = history.filter(item => item.id !== id);
+      setHistory(updated);
+      localStorage.setItem('recipeHistory', JSON.stringify(updated));
+      if (selectedRecipe?.id === id) setSelectedRecipe(null);
+    }
+  };
+
+  const downloadRecipe = (recipeData: RecipeHistory) => {
+    const titleMatch = recipeData.recipe.match(/#\s+(.*)/);
+    const fileName = titleMatch ? `${titleMatch[1].replace(/\s+/g, '_').toLowerCase()}.txt` : 'recipe.txt';
+    const element = document.createElement("a");
+    const file = new Blob([recipeData.recipe], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = fileName;
+    document.body.appendChild(element); 
+    element.click();
+    document.body.removeChild(element);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   useEffect(() => {
     try {
@@ -29,7 +56,7 @@ export default function Vault() {
           onClick={() => setSelectedRecipe(null)}
           style={{ background: 'transparent', border: 'none', color: '#7928CA', cursor: 'pointer', fontSize: '1.2rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'var(--font-display)', fontWeight: 600 }}
         >
-          ← Back to Vault
+          <ArrowLeft size={20} /> Back to Vault
         </button>
         
         {/* Beautiful Image header for the recipe */}
@@ -41,24 +68,43 @@ export default function Vault() {
         )}
 
         <div className="glass-panel" style={{ width: '100%', maxWidth: '1000px', margin: '0', marginTop: '-100px', position: 'relative', zIndex: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-            <Clock size={16} color="#FF0080" />
-            <span style={{ color: '#FF0080', fontWeight: 600, letterSpacing: '1px' }}>{selectedRecipe.date}</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Clock size={16} color="#FF0080" />
+              <span style={{ color: '#FF0080', fontWeight: 600, letterSpacing: '1px' }}>{selectedRecipe.date}</span>
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button 
+                onClick={() => downloadRecipe(selectedRecipe)} 
+                className="pantry-chip"
+                title="Download as Text"
+                style={{ height: '40px', padding: '0 1rem' }}
+              >
+                <Download size={18} />
+              </button>
+              <button 
+                onClick={handlePrint} 
+                className="pantry-chip"
+                title="Print Recipe"
+                style={{ height: '40px', padding: '0 1rem' }}
+              >
+                <Printer size={18} />
+              </button>
+              <button 
+                onClick={(e) => deleteRecipe(e, selectedRecipe.id)}
+                style={{ background: 'rgba(255, 77, 79, 0.1)', border: '1px solid rgba(255, 77, 79, 0.2)', color: '#ff4d4f', padding: '0 1rem', borderRadius: '100px', cursor: 'pointer', height: '40px' }}
+                title="Delete Recipe"
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
           </div>
           <p style={{ color: '#888', marginBottom: '3rem', fontSize: '1.1rem' }}>
             Based on: {selectedRecipe.ingredients}
           </p>
 
           <div className="recipe-content">
-            {selectedRecipe.recipe.split('\n').map((line, index) => {
-              if (line.startsWith('# ')) return <h1 key={index}>{line.replace('# ', '')}</h1>;
-              if (line.startsWith('## ')) return <h2 key={index}>{line.replace('## ', '')}</h2>;
-              if (line.startsWith('### ')) return <h3 key={index}>{line.replace('### ', '')}</h3>;
-              if (line.startsWith('- ')) return <li key={index}>{line.replace('- ', '')}</li>;
-              if (line.match(/^\d+\.\s/)) return <li key={index}>{line}</li>;
-              if (line.trim() === '') return <br key={index} />;
-              return <p key={index}>{line}</p>;
-            })}
+            <RecipeRenderer content={selectedRecipe.recipe} />
           </div>
         </div>
       </main>
@@ -106,8 +152,17 @@ export default function Vault() {
                   <p className="history-ingredients" style={{ fontSize: '1rem', color: '#CCC' }}>
                     {histItem.ingredients}
                   </p>
-                  <div style={{ marginTop: 'auto', paddingTop: '1.5rem', color: '#FF0080', fontSize: '0.95rem', fontWeight: 600 }}>
-                    View Recipe →
+                  <div style={{ marginTop: 'auto', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ color: '#FF0080', fontSize: '0.95rem', fontWeight: 600 }}>
+                      View Recipe →
+                    </div>
+                    <button 
+                      onClick={(e) => deleteRecipe(e, histItem.id)}
+                      style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer', padding: '0.5rem' }}
+                      className="trash-btn"
+                    >
+                      <Trash2 size={18} />
+                    </button>
                   </div>
                 </div>
               </div>
